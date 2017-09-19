@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./jquery.min.js"></script>
+</head>
+<body>
+<div id="inputComponent">
+    <div>
+        <input type="checkbox" value="1">1
+    </div>
+    <div>
+        <input type="checkbox" value="2">2
+    </div>
+    <div>
+        <input type="checkbox" value="3">3
+    </div>
+    <div>
+        <input type="checkbox" value="4">4
+    </div>
+</div>
+<p id="showData">
+    请选择数据
+</p>
+<hr/>
+<div id="inputComponent1">
+    <div>
+        <input type="checkbox" value="1">1
+    </div>
+    <div>
+        <input type="checkbox" value="2">2
+    </div>
+    <div>
+        <input type="checkbox" value="3">3
+    </div>
+    <div>
+        <input type="checkbox" value="4">4
+    </div>
+</div>
+<p id="showData1">
+    请选择数据
+</p>
+<script>
+    $(document).ready(function () {
+        var ChangeData = function(ele,showEle,str) {
+            this.ele = ele;//组件元素
+            this.showEle = showEle;//渲染元素
+            this.storageName = str;//本地存储标识
+            this.data = [];//变量
+            this.init();//初始化函数调用
+            this.inputChange();//监听函数调用
+        };
+        ChangeData.prototype = {
+            constructor:ChangeData,
+            //初始化函数
+            init:function () {
+                if(!localStorage[this.storageName]){
+                    this.setItem(this.storageName,this.data);
+                }
+                this.data = this.getItem(this.storageName);
+                var eachEle = this.ele.find("input[type='checkbox']");
+                eachEle.each((index,item)=>{
+                    var item = $(item);
+                    for(var i = 0;i<this.data.length;i++){
+                    if(item.val() == this.data[i]){
+                        item.attr("checked",true);
+                    }
+                }
+                });
+                this.showData();
+            },
+            //监听函数
+            inputChange:function () {
+                var _this = this;
+                _this.ele.change(function (e) {
+                    debugger;
+                    var e = e || window.event;
+                    e.stopPropagation();
+//                    var index = $(e.target).parent('div').index();
+                    var onEle = e.target;
+                    if(onEle.nodeName !== "INPUT") return;
+                    var value = $(onEle).val()
+                    if(_this.getCheckbox(onEle)){
+                        _this.addData(value);
+                    }else {
+                        _this.delData(value)
+                    }
+                })
+            },
+            //添加数据
+            addData:function (item) {
+                this.data.push(item);
+//                this.data[index] = item;
+                this.setItem(this.storageName,this.data);
+                this.showData();
+                return this.data
+            },
+            //删除数据
+            delData:function (item) {
+                var index = this.getIndex(item,this.data);
+                if (index > -1) {
+                    this.data.splice(index, 1);
+                };
+                this.setItem(this.storageName,this.data);
+                this.showData();
+                return this.data;
+            },
+            //工具函数(获取指定元素的索引)
+            getIndex:function (item,arr) {
+                for(var i in arr){
+                    if(arr[i] === item) return i;
+                }
+                return -1;
+            },
+            //工具函数(获取选中状态)
+            getCheckbox:function (ele) {
+                return $(ele).is(':checked');
+            },
+            //纯属自己用的函数(展示数据)
+            showData:function () {
+                var showEle = this.showEle;
+                var data = this.data;
+                showEle.html(this.data.length>0?'您选中的是：'+data.join(','):'您没有选中任何元素')
+            },
+            //本地存储函数
+            setItem:function (item,data) {
+                localStorage.setItem(item,JSON.stringify(data));
+            },
+            //获取本地存储
+            getItem:function (item) {
+                var data = JSON.parse(localStorage.getItem(item));
+                return data;
+            }
+        }
+        var changeInput = new ChangeData($('#inputComponent'),$('#showData'),'changn');
+
+        var changeInput1 = new ChangeData($('#inputComponent1'),$('#showData1'),'changn1');
+
+    })
+</script>
+</body>
+</html>
